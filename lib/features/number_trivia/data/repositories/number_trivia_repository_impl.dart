@@ -13,25 +13,32 @@ class NumberTriviaRepositoryImpl implements NumberTriviaRepository {
   final NumberTriviaLocalDataSource localDataSource;
   final NetworkInfo networkInfo;
 
-
 // imports meta/meta.dart for the @required annotation
-  NumberTriviaRepositoryImpl({
-    @required this.remoteDataSource,
-    @required this.localDataSource,
-    @required this.networkInfo
-  });
+  NumberTriviaRepositoryImpl(
+      {@required this.remoteDataSource,
+      @required this.localDataSource,
+      @required this.networkInfo});
 
   @override
   Future<Either<Failure, NumberTrivia>> getConcreteNumberTrivia(int number) async {
-    networkInfo.isConnected;
-    try {
-      final remoteTrivia = await remoteDataSource.getConcreteNumberTrivia(number);
-      localDataSource.cacheNumberTrivia(remoteTrivia);
-      return Right(remoteTrivia);
-    } on ServerException {
-      return Left(ServerFailure());
+    if (await networkInfo.isConnected) {
+      try {
+        final remoteTrivia =
+            await remoteDataSource.getConcreteNumberTrivia(number);
+        localDataSource.cacheNumberTrivia(remoteTrivia);
+        return Right(remoteTrivia);
+      } on ServerException {
+        return Left(ServerFailure());
+      }
+    } else {
+      try {
+        final localTrivia = await localDataSource.getLastNumberTrivia();
+        return Right(localTrivia);
+      } on CacheException {
+        return Left(CacheFailure());
+      }
+      
     }
-
   }
 
   @override
