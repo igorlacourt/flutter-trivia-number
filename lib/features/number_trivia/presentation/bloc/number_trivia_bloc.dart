@@ -14,17 +14,17 @@ class NumberTriviaBloc extends Bloc<NumberTriviaEvent, NumberTriviaState> {
   final InputConverter inputConverter;
 
 //This large constructor is necessary because dart doesn't supports non nullable fields.
-  NumberTriviaBloc({
-      @required GetConcreteNumberTrivia concrete,
+  NumberTriviaBloc(
+      {@required GetConcreteNumberTrivia concrete,
       @required GetRandomNumberTrivia random,
-      @required InputConverter input
-  }) : 
-  assert(getConcreteNumberTrivia != null),
-  assert(getRandomNumberTrivia != null),
-  assert(inputConverter != null),  
-  getConcreteNumberTrivia = concrete, 
-  getRandomNumberTrivia = random,
-  inputConverter = input;
+      @required InputConverter input})
+      : getConcreteNumberTrivia = concrete,
+        getRandomNumberTrivia = random,
+        inputConverter = input {
+    assert(getConcreteNumberTrivia != null);
+    assert(getRandomNumberTrivia != null);
+    assert(inputConverter != null);
+  }
 
   @override
   NumberTriviaState get initialState => Empty();
