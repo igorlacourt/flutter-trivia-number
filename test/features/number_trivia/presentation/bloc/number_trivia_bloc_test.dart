@@ -45,12 +45,15 @@ void main() {
     final tNumberParsed = 1;
     final tNumberTrivia = NumberTrivia(number: 1, text: 'test trivia  ');
 
+    void setUpInputConverterSuccecc() =>
+      when(mockInputConverter.stringToUnsignedInteger(any))
+          .thenReturn(Right(tNumberParsed)); //thenReturn() used because the operation is synchronous
+
     test(
         'call the input converter to validate and convert the string to an unsigned integer',
         () async {
       // arrange
-      when(mockInputConverter.stringToUnsignedInteger(any)).thenReturn(Right(
-          tNumberParsed)); //thenReturn used because the operation is synchronous
+      setUpInputConverterSuccecc();
       // act
       bloc.dispatch(GetTriviaForConcreteNumber(tNumberString));
       await untilCalled(mockInputConverter.stringToUnsignedInteger(any));
@@ -80,8 +83,7 @@ void main() {
       'get data from the concrete use case',
       () async {
         //arrange
-        when(mockInputConverter.stringToUnsignedInteger(any))
-          .thenReturn(Right(tNumberParsed));
+        setUpInputConverterSuccecc();
         when(mockGetConcreteNumberTrivia(any)) //it's called like a constructor, but it is the call function inside the class
           .thenAnswer((_) async => Right(tNumberTrivia));
         //act
