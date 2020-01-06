@@ -45,7 +45,7 @@ void main() {
     final tNumberParsed = 1;
     final tNumberTrivia = NumberTrivia(number: 1, text: 'test trivia  ');
 
-    void setUpInputConverterSuccecc() =>
+    void setUpInputConverterSuccess() =>
       when(mockInputConverter.stringToUnsignedInteger(any))
           .thenReturn(Right(tNumberParsed)); //thenReturn() used because the operation is synchronous
 
@@ -53,7 +53,7 @@ void main() {
         'call the input converter to validate and convert the string to an unsigned integer',
         () async {
       // arrange
-      setUpInputConverterSuccecc();
+      setUpInputConverterSuccess();
       // act
       bloc.dispatch(GetTriviaForConcreteNumber(tNumberString));
       await untilCalled(mockInputConverter.stringToUnsignedInteger(any));
@@ -83,7 +83,7 @@ void main() {
       'get data from the concrete use case',
       () async {
         //arrange
-        setUpInputConverterSuccecc();
+        setUpInputConverterSuccess();
         when(mockGetConcreteNumberTrivia(any)) //it's called like a constructor, but it is the call function inside the class
           .thenAnswer((_) async => Right(tNumberTrivia));
         //act
@@ -91,6 +91,26 @@ void main() {
         await untilCalled(mockGetConcreteNumberTrivia(any)); // await the mockGetConcreteNumberTrivia being called
         //assert
         verify(mockGetConcreteNumberTrivia(Params(number: tNumberParsed))); //it's called like a constructor, but it is the call function inside the class
+      }
+    );
+
+    test(
+      'emit [Loading, Loaded] when data is gotten successfuly',
+      () async {
+        //arrange
+        setUpInputConverterSuccess();
+        when(mockGetConcreteNumberTrivia(any)) //it's called like a constructor, but it is the call function inside the class
+          .thenAnswer((_) async => Right(tNumberTrivia));
+        //assert later
+        final expected = [
+          Empty(),
+          Loading(),
+          Loaded(trivia: tNumberTrivia)
+        ];
+        expectLater(bloc.state, emitsInOrder(expected));
+        
+        //act
+        bloc.dispatch(GetTriviaForConcreteNumber(tNumberString));
       }
     );
 
