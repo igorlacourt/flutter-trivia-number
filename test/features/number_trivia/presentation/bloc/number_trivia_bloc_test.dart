@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+import 'package:trivia_number/core/error/failures.dart';
 
 import 'package:trivia_number/core/util/input_converter.dart';
 import 'package:trivia_number/features/number_trivia/domain/entities/number_trivia.dart';
@@ -46,8 +47,8 @@ void main() {
     final tNumberTrivia = NumberTrivia(number: 1, text: 'test trivia  ');
 
     void setUpInputConverterSuccess() =>
-      when(mockInputConverter.stringToUnsignedInteger(any))
-          .thenReturn(Right(tNumberParsed)); //thenReturn() used because the operation is synchronous
+        when(mockInputConverter.stringToUnsignedInteger(any)).thenReturn(Right(
+            tNumberParsed)); //thenReturn() used because the operation is synchronous
 
     test(
         'call the input converter to validate and convert the string to an unsigned integer',
@@ -78,41 +79,55 @@ void main() {
         bloc.dispatch(GetTriviaForConcreteNumber(tNumberString));
       },
     );
-    
-    test(
-      'get data from the concrete use case',
-      () async {
-        //arrange
-        setUpInputConverterSuccess();
-        when(mockGetConcreteNumberTrivia(any)) //it's called like a constructor, but it is the call function inside the class
+
+    test('get data from the concrete use case', () async {
+      //arrange
+      setUpInputConverterSuccess();
+      when(mockGetConcreteNumberTrivia(
+              any)) //it's called like a constructor, but it is the call function inside the class
           .thenAnswer((_) async => Right(tNumberTrivia));
-        //act
-        bloc.dispatch(GetTriviaForConcreteNumber(tNumberString));
-        await untilCalled(mockGetConcreteNumberTrivia(any)); // await the mockGetConcreteNumberTrivia being called
-        //assert
-        verify(mockGetConcreteNumberTrivia(Params(number: tNumberParsed))); //it's called like a constructor, but it is the call function inside the class
-      }
-    );
+      //act
+      bloc.dispatch(GetTriviaForConcreteNumber(tNumberString));
+      await untilCalled(mockGetConcreteNumberTrivia(
+          any)); // await the mockGetConcreteNumberTrivia being called
+      //assert
+      verify(mockGetConcreteNumberTrivia(Params(
+          number:
+              tNumberParsed))); //it's called like a constructor, but it is the call function inside the class
+    });
+
+    test('emit [Loading, Loaded] when data is gotten successfuly', () async {
+      //arrange
+      setUpInputConverterSuccess();
+      when(mockGetConcreteNumberTrivia(
+              any)) //it's called like a constructor, but it is the call function inside the class
+          .thenAnswer((_) async => Right(tNumberTrivia));
+      //assert later
+      final expected = [Empty(), Loading(), Loaded(trivia: tNumberTrivia)];
+      expectLater(bloc.state, emitsInOrder(expected));
+
+      //act
+      bloc.dispatch(GetTriviaForConcreteNumber(tNumberString));
+    });
 
     test(
-      'emit [Loading, Loaded] when data is gotten successfuly',
+      'should emit [Loading, Error] when getting data fails',
       () async {
-        //arrange
+        // arrange
         setUpInputConverterSuccess();
-        when(mockGetConcreteNumberTrivia(any)) //it's called like a constructor, but it is the call function inside the class
-          .thenAnswer((_) async => Right(tNumberTrivia));
-        //assert later
+        when(mockGetConcreteNumberTrivia(any))
+            .thenAnswer((_) async => Left(ServerFailure()));
+        // assert later
         final expected = [
           Empty(),
           Loading(),
-          Loaded(trivia: tNumberTrivia)
+          Error(message: SERVER_FAILURE_MESSAGE),
         ];
         expectLater(bloc.state, emitsInOrder(expected));
-        
-        //act
+        // act
         bloc.dispatch(GetTriviaForConcreteNumber(tNumberString));
-      }
+      },
     );
-
+    
   });
 }

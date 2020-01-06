@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:trivia_number/core/util/input_converter.dart';
+import 'package:trivia_number/features/number_trivia/presentation/bloc/bloc.dart';
 import 'package:trivia_number/features/number_trivia/presentation/bloc/number_trivia_event.dart';
 import 'package:trivia_number/features/number_trivia/presentation/bloc/number_trivia_state.dart';
 import 'package:meta/meta.dart';
@@ -51,7 +52,7 @@ class NumberTriviaBloc extends Bloc<NumberTriviaEvent, NumberTriviaState> {
               final failureOrTrivia =
                 await getConcreteNumberTrivia(Params(number: integer));
               yield failureOrTrivia.fold(
-                  (failure) => throw UnimplementedError(),
+                  (failure) => Error(message: SERVER_FAILURE_MESSAGE),
                   (trivia) => Loaded(trivia: trivia)
                 );
             }
